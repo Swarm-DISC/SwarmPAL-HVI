@@ -1,0 +1,37 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: SwarmPAL-HVI
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Ashley
+    name-particle: R. A.
+    family-names: Smith
+    email: ashley.smith@ed.ac.uk
+    orcid: 'https://orcid.org/0000-0001-5198-9574'
+    affiliation: University of Edinburgh
+  - given-names: David
+    family-names: De Klerk
+    email: david.deklerk@ed.ac.uk
+    affiliation: University of Edinburgh
+    orcid: 'https://orcid.org/0000-0002-2728-2955'
+  - given-names: Lauren
+    family-names: Orr
+    email: lauren@bgs.ac.uk
+    affiliation: British Geological Survey
+    orcid: 'https://orcid.org/0000-0002-8257-1362'
+  - email: ngp@bgs.ac.uk
+    affiliation: British Geological Survey
+    given-names: Natalia
+    family-names: Perez
+    name-particle: G.
+    orcid: 'https://orcid.org/0000-0001-7751-2686'
+repository-code: 'https://github.com/Swarm-DISC/SwarmPAL-HVI'
+abstract: >-
+  A standalone SwarmPAL toolbox for the Hazard Variation
+  Index.
+license: MIT
