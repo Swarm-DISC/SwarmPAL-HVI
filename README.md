@@ -5,7 +5,7 @@ This is a standalone [SwarmPAL][swarmpal] toolbox that implements the the [Hazar
 
 ## Licence
 
-See [LICENCE][LICENCE]
+See [LICENCE](LICENCE)
 
 
 
