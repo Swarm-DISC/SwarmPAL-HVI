@@ -8,3 +8,15 @@ wheels/
 
 # Virtual environments
 .venv
+
+# Data
+*.nc
+*.nc4
+
+# Slurm logs
+*.out
+slurm-*
+
+# Editor backups
+*~
+*.swp
