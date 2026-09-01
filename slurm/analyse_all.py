@@ -15,34 +15,40 @@ import os
 import argparse 
 import xarray as xr
 
-#from swarmpal.io._paldata import PalDataItem, create_paldata
+from datetime import datetime
+
 from swarmpal import fetch_data
 
 from swarmpal_hvi.spatial_h3_binning import SpatialH3Binning
 from swarmpal_hvi.temporal_binning import TemporalBinning
 
-from download import make_filename
+import swarm
 
 def analyse(args):
-    input_filename = make_filename(args.collection, args.week)
-    output_filename = make_filename(args.collection, args.week, 'analysed')
 
+    start_week = swarm.get_swarm_week(args.start_date)
+    end_week = swarm.get_swarm_week(args.end_date)
+
+    output_filename = swarm.make_filename(args.collection, start_week, f"{end_week:03}", 'analysed')
+    
     if os.path.exists(output_filename):
         print(f"File exists: {output_filename}")
         return
 
-    print(args)
-    config = dict(data_params=[dict(
-        provider='file',
-        filename=input_filename,
-        filetype='netcdf',
-        dataset=args.collection,
-    )])
-    #ds = create_paldata(**{
-    #    dataproduct: PalDataItem.from_file(f"data/2016_{args.week:02}.nc")
-    #})
-    ds = fetch_data(config)
     dataproduct = '/' + args.collection
+    input_filename = swarm.make_filename(args.collection, start_week)
+    ds = xr.load_datatree(input_filename)
+    for week in range(start_week+1, end_week+1):
+        input_filename = swarm.make_filename(args.collection, week)
+        if not os.path.exists(input_filename):
+            print(f"File {input_filename} does not exists")
+            continue
+        tmp = xr.load_datatree(input_filename)
+        if ds[dataproduct]["Timestamp"].size == 0:
+            print('No data')
+            continue
+        print(input_filename, ':', tmp[dataproduct]["Timestamp"][0].dt.strftime("%Y-%m-%d").item(), '-', tmp[dataproduct]["Timestamp"][-1].dt.strftime("%Y-%m-%d").item(), '\n')
+        ds[dataproduct] = xr.concat([ds[dataproduct].to_dataset(), tmp[dataproduct].to_dataset()], dim='Timestamp')
 
     ds[dataproduct]["magnetic_residual"] = ds[dataproduct].swarmpal.magnetic_residual()
 
@@ -75,10 +81,9 @@ def main():
             prog="analyse.py",
             description="Perfrom the HVI analysis on a week's data."
     )
-    parser.add_argument("-c", "--collection", default="SW_OPER_MAGB_LR_1B", help="The Swarm data product to download")
-    parser.add_argument("-w", "--week", type=int, help="The week to analyse")
+    swarm.add_common_args(parser)
     args = parser.parse_args()
     analyse(args)
 
-if __name__ == "__main__":
+if  __name__ == "__main__":
     main()

@@ -15,14 +15,15 @@ import argparse
 import swarmpal
 import datetime
 
-a_week = datetime.timedelta(days=7)
-year = 2016
+import swarm
 
-def make_config(start_time):
+a_week = datetime.timedelta(days=7)
+
+def make_config(collection, start_time):
     '''Makes a SwarmPAL config object for downloading VirES data'''
     return dict(data_params=[dict(
         provider='vires',
-        collection='SW_OPER_MAGB_LR_1B',
+        collection=collection, 
         measurements=['F', 'B_NEC', 'Flags_F', 'Flags_B', 'Flags_q', 'Flags_Platform'],
         models=["Model = 'CHAOS'"],
         start_time=start_time.isoformat(),
@@ -31,17 +32,23 @@ def make_config(start_time):
     )])
 
 def main(args) -> None:
-    start_time = datetime.datetime(year, 1, 1)
-    for week in range(1, args.weeks+1):
-        filename = f'data/{year}_{week:03}.nc'
+
+    start_date = args.start_date
+    start_week = swarm.get_swarm_week(args.start_date)
+    end_week = swarm.get_swarm_week(args.end_date)
+    n_weeks = end_week - start_week
+    print(f"Downloading weeks {start_week} to {end_week}")
+    for week in range(start_week, end_week+1):
+        start_date = swarm.get_swarm_week_start_date(week)
+        filename = swarm.make_filename(args.collection, week)
+
         if os.path.exists(filename):
             print(f"Skipping because file exists: {filename}")
             continue
             
-        config = make_config(start_time)
+        config = make_config(args.collection, start_date)
         data = swarmpal.fetch_data(config)
         data.to_netcdf(filename)
-        start_time += a_week
 
 
 if __name__ == "__main__":
@@ -49,6 +56,6 @@ if __name__ == "__main__":
             prog="download.py",
             description="Downloads Swarm data from VIRes"
     )
-    parser.add_argument("-w", "--weeks", default=12, type=int, help="The number of weeks worth of data to download")
+    swarm.add_common_args(parser)
     args = parser.parse_args()
     main(args)
