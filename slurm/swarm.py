@@ -57,6 +57,12 @@ def add_common_args(parser):
         type=lambda s: datetime.datetime.strptime(s, "%Y-%m-%d"),
         help="End date of the period to aggrate [YYYY-MM-DD]",
     )
+    parser.add_argument(
+        "-r", "--resolution",
+        type=int,
+        default=2,
+        help="The H3 resolution that determines spatial bin size",
+    )
 
 
 ### TESTS

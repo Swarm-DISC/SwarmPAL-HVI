@@ -29,7 +29,7 @@ def analyse(args):
     start_week = swarm.get_swarm_week(args.start_date)
     end_week = swarm.get_swarm_week(args.end_date)
 
-    output_filename = swarm.make_filename(args.collection, start_week, f"{end_week:03}", 'analysed')
+    output_filename = swarm.make_filename(args.collection, start_week, f"{end_week:03}", 'analysed', f'h3r={args.resolution}')
     
     if os.path.exists(output_filename):
         print(f"File exists: {output_filename}")
@@ -66,7 +66,7 @@ def analyse(args):
 
     spatial_binning = SpatialH3Binning(dict(
         dataset=dataproduct + "_time_binned",
-        resolution=2,
+        resolution=args.resolution,
         output_dataset=dataproduct + "_spatial_binned",
         input_variables=["F", "magnetic_residual"]
     ))
