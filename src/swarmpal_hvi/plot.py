@@ -4,7 +4,7 @@ import xarray as xr
 import matplotlib.pyplot as plt
 import geopandas as gpd
 
-def plot(dataset: xr.Dataset):
+def plot(dataset: xr.Dataset, columns=['B_NEC_std'], vmin=dict(B_NEC_std=0), vmax=dict(B_NEC_std=0.5), cmap='viridis'):
     '''Quick and dirty plotting routine for HVI spatially averaged data.'''
 
     df = gpd.GeoDataFrame(geometry=gpd.GeoSeries(), crs='EPSG:4326')
@@ -44,10 +44,17 @@ def plot(dataset: xr.Dataset):
             #categorical=True,
             legend=True,
             vmin=vmin, vmax=vmax,
+            cmap=cmap,
             #legend_kwds={'loc': 'upper left'},
         )
     
     
-    plot_df(df, column='F_std')
+    for column in columns:
+        plot_df(df,
+            column=column,
+            vmin=vmin.get(column, None),
+            vmax=vmax.get(column, None),
+
+        )
     
-    plot_df(df, column='B_NEC_std_C', vmin=0, vmax=0.5)
+    #plot_df(df, column='B_NEC_std', vmin=0, vmax=0.5)
