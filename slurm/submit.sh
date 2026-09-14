@@ -13,7 +13,10 @@ mkdir -p {data,slurm-out}
 DOWNLOAD_JOB_ID=$(sbatch --parsable download.sh "$@")
 echo "Submitted download job with JobID: ${DOWNLOAD_JOB_ID}"
 
-ANALYSE_JOB_ID=$(sbatch --parsable --dependency=afterok:${DOWNLOAD_JOB_ID} analyse_all.sh "$@")
+ANALYSE_TIME_JOB_ID=$(sbatch --parsable --dependency=afterok:${DOWNLOAD_JOB_ID} analyse_week.sh "$@")
+echo "Submitted temporal binning job with JobID: ${ANALYSE_TIME_JOB_ID}"
+
+ANALYSE_JOB_ID=$(sbatch --parsable --dependency=afterok:${ANALYSE_TIME_JOB_ID} analyse_all.sh "$@")
 echo "Submitted analysis job with JobID: ${ANALYSE_JOB_ID}"
 
 #ANALYSE_JOB_ID=$(sbatch --parsable --dependency=${DOWNLOAD_JOB_ID} --array=1-${N_WEEKS} analyse_week.sh)

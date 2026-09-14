@@ -33,7 +33,6 @@ def make_config(collection, start_time):
 
 def main(args) -> None:
 
-    start_date = args.start_date
     start_week = swarm.get_swarm_week(args.start_date)
     end_week = swarm.get_swarm_week(args.end_date)
     n_weeks = end_week - start_week
@@ -46,7 +45,7 @@ def main(args) -> None:
             print(f"Skipping because file exists: {filename}")
             continue
             
-        config = make_config(args.collection, start_date)
+        config = make_config(args.collection, args.start_date)
         data = swarmpal.fetch_data(config)
         data.to_netcdf(filename)
 

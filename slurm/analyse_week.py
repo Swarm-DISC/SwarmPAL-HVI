@@ -21,62 +21,68 @@ from swarmpal import fetch_data
 from swarmpal_hvi.spatial_h3_binning import SpatialH3Binning
 from swarmpal_hvi.temporal_binning import TemporalBinning
 
-from download import make_filename
+import swarm
 
 def analyse(args):
-    input_filename = make_filename(args.collection, args.week)
-    output_filename = make_filename(args.collection, args.week, 'analysed')
 
-    if os.path.exists(output_filename):
-        print(f"File exists: {output_filename}")
-        return
+    start_week = swarm.get_swarm_week(args.start_date)
+    end_week = swarm.get_swarm_week(args.end_date)
+    n_weeks = end_week - start_week
+    print(f"Performing temporal binning on weeks {start_week} to {end_week}")
+    for week in range(start_week, end_week+1):
+        input_filename = swarm.make_filename(args.collection, week)
+        output_filename = swarm.make_filename(args.collection, week, 'time_binned')
 
-    print(args)
-    config = dict(data_params=[dict(
-        provider='file',
-        filename=input_filename,
-        filetype='netcdf',
-        dataset=args.collection,
-    )])
-    #ds = create_paldata(**{
-    #    dataproduct: PalDataItem.from_file(f"data/2016_{args.week:02}.nc")
-    #})
-    ds = fetch_data(config)
-    dataproduct = '/' + args.collection
+        if os.path.exists(output_filename):
+            print(f"File exists: {output_filename}")
+            continue
 
-    ds[dataproduct]["magnetic_residual"] = ds[dataproduct].swarmpal.magnetic_residual()
+        config = dict(data_params=[dict(
+            provider='file',
+            filename=input_filename,
+            filetype='netcdf',
+            dataset=args.collection,
+        )])
 
-    temporal_binning = TemporalBinning(config=dict(
-        dataset=dataproduct,
-        input_variables=[
-            "F",
-            "magnetic_residual"
-        ],
-        N_readings=20,
-        output_dataset=dataproduct + "_time_binned"
-    ))
-    print(temporal_binning.config)
-    ds = temporal_binning(ds)
+        #ds = create_paldata(**{
+        #    dataproduct: PalDataItem.from_file(f"data/2016_{args.week:02}.nc")
+        #})
+        ds = fetch_data(config)
+        dataproduct = '/' + args.collection
 
-    spatial_binning = SpatialH3Binning(dict(
-        dataset=dataproduct + "_time_binned",
-        resolution=2,
-        output_dataset=dataproduct + "_spatial_binned",
-        input_variables=["F", "magnetic_residual"]
-    ))
-    ds = spatial_binning(ds)
+        ds[dataproduct]["magnetic_residual"] = ds[dataproduct].swarmpal.magnetic_residual()
 
-    results = xr.DataTree()
-    results[dataproduct + "_spatial_binned"] = ds[dataproduct + "_spatial_binned"]
-    results.to_netcdf(output_filename)
+        temporal_binning = TemporalBinning(config=dict(
+            dataset=dataproduct,
+            input_variables=[
+                "F",
+                "magnetic_residual"
+            ],
+            N_readings=20,
+            output_dataset=dataproduct + "_time_binned"
+        ))
+        print(temporal_binning.config)
+        ds = temporal_binning(ds)
+
+        #spatial_binning = SpatialH3Binning(dict(
+        #    dataset=dataproduct + "_time_binned",
+        #    resolution=2,
+        #    output_dataset=dataproduct + "_spatial_binned",
+        #    input_variables=["F", "magnetic_residual"]
+        #))
+        #ds = spatial_binning(ds)
+
+        results = xr.DataTree()
+        #results[dataproduct + "_spatial_binned"] = ds[dataproduct + "_spatial_binned"]
+        results[dataproduct + "_time_binned"] = ds[dataproduct + "_time_binned"]
+        results.to_netcdf(output_filename)
 
 def main():
     parser = argparse.ArgumentParser(
             prog="analyse.py",
             description="Perfrom the HVI analysis on a week's data."
     )
-    parser.add_argument("-c", "--collection", default="SW_OPER_MAGB_LR_1B", help="The Swarm data product to download")
-    parser.add_argument("-w", "--week", type=int, help="The week to analyse")
+    swarm.add_common_args(parser)
     args = parser.parse_args()
     analyse(args)
 

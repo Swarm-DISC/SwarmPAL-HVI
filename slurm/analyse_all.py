@@ -35,21 +35,23 @@ def analyse(args):
         print(f"File exists: {output_filename}")
         return
 
-    dataproduct = '/' + args.collection
-    input_filename = swarm.make_filename(args.collection, start_week)
+    input_dataproduct = '/' + args.collection + '_time_binned'
+    output_dataproduct = '/' + args.collection + '_spatial_binned'
+    input_filename = swarm.make_filename(args.collection, start_week, 'time_binned')
     ds = xr.load_datatree(input_filename)
     for week in range(start_week+1, end_week+1):
-        input_filename = swarm.make_filename(args.collection, week)
+        input_filename = swarm.make_filename(args.collection, week, 'time_binned')
         if not os.path.exists(input_filename):
             print(f"File {input_filename} does not exists")
             continue
         tmp = xr.load_datatree(input_filename)
-        if ds[dataproduct]["Timestamp"].size == 0:
+        if ds[input_dataproduct]["Timestamp"].size == 0:
             print('No data')
             continue
-        print(input_filename, ':', tmp[dataproduct]["Timestamp"][0].dt.strftime("%Y-%m-%d").item(), '-', tmp[dataproduct]["Timestamp"][-1].dt.strftime("%Y-%m-%d").item(), '\n')
-        ds[dataproduct] = xr.concat([ds[dataproduct].to_dataset(), tmp[dataproduct].to_dataset()], dim='Timestamp')
+        print(input_filename, ':', tmp[input_dataproduct]["Timestamp"][0].dt.strftime("%Y-%m-%d").item(), '-', tmp[input_dataproduct]["Timestamp"][-1].dt.strftime("%Y-%m-%d").item(), '\n')
+        ds[input_dataproduct] = xr.concat([ds[input_dataproduct].to_dataset(), tmp[input_dataproduct].to_dataset()], dim='Timestamp')
 
+    '''
     ds[dataproduct]["magnetic_residual"] = ds[dataproduct].swarmpal.magnetic_residual()
 
     temporal_binning = TemporalBinning(config=dict(
@@ -63,17 +65,18 @@ def analyse(args):
     ))
     print(temporal_binning.config)
     ds = temporal_binning(ds)
+    '''
 
     spatial_binning = SpatialH3Binning(dict(
-        dataset=dataproduct + "_time_binned",
+        dataset=input_dataproduct, # + "_time_binned",
         resolution=args.resolution,
-        output_dataset=dataproduct + "_spatial_binned",
+        output_dataset=output_dataproduct, # + "_spatial_binned",
         input_variables=["F", "magnetic_residual"]
     ))
     ds = spatial_binning(ds)
 
     results = xr.DataTree()
-    results[dataproduct + "_spatial_binned"] = ds[dataproduct + "_spatial_binned"]
+    results[output_dataproduct] = ds[output_dataproduct]
     results.to_netcdf(output_filename)
 
 def main():
