@@ -14,8 +14,11 @@ import os
 import argparse 
 import swarmpal
 import datetime
+from pathlib import Path
 
 import swarm
+
+import swarmpal_hvi.data as hvi_data
 
 a_week = datetime.timedelta(days=7)
 
@@ -33,19 +36,20 @@ def make_config(collection, start_time):
 
 def main(args) -> None:
 
-    start_week = swarm.get_swarm_week(args.start_date)
-    end_week = swarm.get_swarm_week(args.end_date)
+    data_dir = Path('data')
+    start_week = hvi_data.get_swarm_week(args.start_date)
+    end_week = hvi_data.get_swarm_week(args.end_date)
     n_weeks = end_week - start_week
     print(f"Downloading weeks {start_week} to {end_week}")
     for week in range(start_week, end_week+1):
-        start_date = swarm.get_swarm_week_start_date(week)
-        filename = swarm.make_filename(args.collection, week)
+        start_date = hvi_data.get_swarm_week_start_date(week)
+        filename = data_dir / hvi_data.make_dataset_filename(args.collection, week)
 
         if os.path.exists(filename):
             print(f"Skipping because file exists: {filename}")
             continue
             
-        config = make_config(args.collection, args.start_date)
+        config = make_config(args.collection, start_date)
         data = swarmpal.fetch_data(config)
         data.to_netcdf(filename)
 

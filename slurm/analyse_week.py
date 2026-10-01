@@ -14,24 +14,27 @@
 import os
 import argparse 
 import xarray as xr
+from pathlib import Path
 
 #from swarmpal.io._paldata import PalDataItem, create_paldata
 from swarmpal import fetch_data
 
 from swarmpal_hvi.spatial_h3_binning import SpatialH3Binning
 from swarmpal_hvi.temporal_binning import TemporalBinning
+import swarmpal_hvi.data as hvi_data
 
 import swarm
 
 def analyse(args):
 
-    start_week = swarm.get_swarm_week(args.start_date)
-    end_week = swarm.get_swarm_week(args.end_date)
+    start_week = hvi_data.get_swarm_week(args.start_date)
+    end_week = hvi_data.get_swarm_week(args.end_date)
     n_weeks = end_week - start_week
     print(f"Performing temporal binning on weeks {start_week} to {end_week}")
+    data_dir = Path('data')
     for week in range(start_week, end_week+1):
-        input_filename = swarm.make_filename(args.collection, week)
-        output_filename = swarm.make_filename(args.collection, week, 'time_binned')
+        input_filename = data_dir / hvi_data.make_dataset_filename(args.collection, week)
+        output_filename = data_dir / hvi_data.make_dataset_filename(args.collection, week, 'time_binned')
 
         if os.path.exists(output_filename):
             print(f"File exists: {output_filename}")
@@ -39,7 +42,7 @@ def analyse(args):
 
         config = dict(data_params=[dict(
             provider='file',
-            filename=input_filename,
+            filename=str(input_filename),
             filetype='netcdf',
             dataset=args.collection,
         )])
@@ -50,13 +53,13 @@ def analyse(args):
         ds = fetch_data(config)
         dataproduct = '/' + args.collection
 
-        ds[dataproduct]["magnetic_residual"] = ds[dataproduct].swarmpal.magnetic_residual()
+        ds[dataproduct]["sigma_B_NEC"] = ds[dataproduct].swarmpal.magnetic_residual()
 
         temporal_binning = TemporalBinning(config=dict(
             dataset=dataproduct,
             input_variables=[
                 "F",
-                "magnetic_residual"
+                "sigma_B_NEC"
             ],
             N_readings=20,
             output_dataset=dataproduct + "_time_binned"
@@ -75,7 +78,7 @@ def analyse(args):
         results = xr.DataTree()
         #results[dataproduct + "_spatial_binned"] = ds[dataproduct + "_spatial_binned"]
         results[dataproduct + "_time_binned"] = ds[dataproduct + "_time_binned"]
-        results.to_netcdf(output_filename)
+        results.to_netcdf(str(output_filename))
 
 def main():
     parser = argparse.ArgumentParser(

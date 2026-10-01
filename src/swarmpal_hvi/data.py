@@ -50,7 +50,7 @@ def make_dataset_filename(collection, week_no, *args, **kwargs):
         else ""
     )
 
-    return f"data/{collection}__{week_no:03}{args_part}{kwargs_part}.nc"
+    return f"{collection}__{week_no:03}{args_part}{kwargs_part}.nc"
 
 def get_swarm_week(date):
     '''Returns the number of weeks after the start of Swarm data capture'''
@@ -61,6 +61,6 @@ def get_swarm_week_start_date(week_no):
 
 def make_filename_containing(collection, date, *args, **kwargs):
     week_no = get_swarm_week(date)
-    return make_filename(collection, week_no, *args, **kwargs)
+    return make_dataset_filename(collection, week_no, *args, **kwargs)
 
 

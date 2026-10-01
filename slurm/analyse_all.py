@@ -16,20 +16,25 @@ import argparse
 import xarray as xr
 
 from datetime import datetime
+from pathlib import Path
 
 from swarmpal import fetch_data
 
 from swarmpal_hvi.spatial_h3_binning import SpatialH3Binning
 from swarmpal_hvi.temporal_binning import TemporalBinning
+import swarmpal_hvi.data as hvi_data
 
 import swarm
 
 def analyse(args):
 
-    start_week = swarm.get_swarm_week(args.start_date)
-    end_week = swarm.get_swarm_week(args.end_date)
+    data_dir = Path('data')
+    results_dir = Path('SwarmPAL-HVI-data/results')
 
-    output_filename = swarm.make_filename(args.collection, start_week, f"{end_week:03}", 'analysed', f'h3r={args.resolution}')
+    start_week = hvi_data.get_swarm_week(args.start_date)
+    end_week = hvi_data.get_swarm_week(args.end_date)
+
+    output_filename = results_dir / hvi_data.make_dataset_filename(args.collection, start_week, f"{end_week:03}", 'analysed', f'h3r={args.resolution}')
     
     if os.path.exists(output_filename):
         print(f"File exists: {output_filename}")
@@ -37,14 +42,14 @@ def analyse(args):
 
     input_dataproduct = '/' + args.collection + '_time_binned'
     output_dataproduct = '/' + args.collection + '_spatial_binned'
-    input_filename = swarm.make_filename(args.collection, start_week, 'time_binned')
-    ds = xr.load_datatree(input_filename)
+    input_filename = data_dir / hvi_data.make_dataset_filename(args.collection, start_week, 'time_binned')
+    ds = xr.load_datatree(str(input_filename))
     for week in range(start_week+1, end_week+1):
-        input_filename = swarm.make_filename(args.collection, week, 'time_binned')
+        input_filename = data_dir / hvi_data.make_dataset_filename(args.collection, week, 'time_binned')
         if not os.path.exists(input_filename):
             print(f"File {input_filename} does not exists")
             continue
-        tmp = xr.load_datatree(input_filename)
+        tmp = xr.load_datatree(str(input_filename))
         if ds[input_dataproduct]["Timestamp"].size == 0:
             print('No data')
             continue
@@ -52,13 +57,13 @@ def analyse(args):
         ds[input_dataproduct] = xr.concat([ds[input_dataproduct].to_dataset(), tmp[input_dataproduct].to_dataset()], dim='Timestamp')
 
     '''
-    ds[dataproduct]["magnetic_residual"] = ds[dataproduct].swarmpal.magnetic_residual()
+    ds[dataproduct]["sigma_B_NEC"] = ds[dataproduct].swarmpal.magnetic_residual()
 
     temporal_binning = TemporalBinning(config=dict(
         dataset=dataproduct,
         input_variables=[
             "F",
-            "magnetic_residual"
+            "sigma_B_NEC"
         ],
         N_readings=20,
         output_dataset=dataproduct + "_time_binned"
@@ -71,13 +76,13 @@ def analyse(args):
         dataset=input_dataproduct, # + "_time_binned",
         resolution=args.resolution,
         output_dataset=output_dataproduct, # + "_spatial_binned",
-        input_variables=["F", "magnetic_residual"]
+        input_variables=["F", "sigma_B_NEC"]
     ))
     ds = spatial_binning(ds)
 
     results = xr.DataTree()
     results[output_dataproduct] = ds[output_dataproduct]
-    results.to_netcdf(output_filename)
+    results.to_netcdf(str(output_filename))
 
 def main():
     parser = argparse.ArgumentParser(
