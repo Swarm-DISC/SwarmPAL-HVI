@@ -10,9 +10,9 @@ def plot(dataset: xr.Dataset, columns=['B_NEC_std'], vmin=dict(B_NEC_std=0), vma
     df = gpd.GeoDataFrame(geometry=gpd.GeoSeries(), crs='EPSG:4326')
     df['h3_bin'] = dataset['h3_bin']
     df['geometry'] = df['h3_bin'].map(lambda cell: h3.cells_to_h3shape([cell]))
-    df['B_NEC_std_N'] = dataset['magnetic_residual'][:, 0]
-    df['B_NEC_std_E'] = dataset['magnetic_residual'][:, 1]
-    df['B_NEC_std_C'] = dataset['magnetic_residual'][:, 2]
+    df['B_NEC_std_N'] = dataset['sigma_B_NEC'][:, 0]
+    df['B_NEC_std_E'] = dataset['sigma_B_NEC'][:, 1]
+    df['B_NEC_std_C'] = dataset['sigma_B_NEC'][:, 2]
     df['B_NEC_std'] = np.sqrt(df['B_NEC_std_N']**2 + df['B_NEC_std_E']**2 + df['B_NEC_std_C']**2 )
     df['F_std'] = dataset['F']
     
