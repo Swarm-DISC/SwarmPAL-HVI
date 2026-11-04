@@ -53,13 +53,14 @@ def analyse(args):
         ds = fetch_data(config)
         dataproduct = '/' + args.collection
 
-        ds[dataproduct]["sigma_B_NEC"] = ds[dataproduct].swarmpal.magnetic_residual()
+        ds[dataproduct]["B_NEC_res_Model"] = ds[dataproduct].swarmpal.magnetic_residual()
+        ds[dataproduct]["F_res_Model"] = ds[dataproduct].swarmpal.magnetic_residual(scalar=True)
 
         temporal_binning = TemporalBinning(config=dict(
             dataset=dataproduct,
             input_variables=[
-                "F",
-                "sigma_B_NEC"
+                "F_res_Model",
+                "B_NEC_res_Model"
             ],
             N_readings=20,
             output_dataset=dataproduct + "_time_binned"

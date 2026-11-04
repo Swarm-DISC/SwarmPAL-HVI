@@ -46,18 +46,21 @@ class TemporalBinning(PalProcess):
         dataset = self.config['dataset']
         output_dataset = self.config["output_dataset"]
         input_variables = self.config["input_variables"]
-        input_coordinates = ["Longitude", "Latitude"]
+        input_coordinates = ["Longitude", "Latitude", "Radius"]
         dt = datetime.timedelta(seconds=N)
 
         datatree[output_dataset] = xr.Dataset()
         # Calculate standard deviations of the variables
         for variable in input_variables:
             variable_resampled = datatree[dataset][variable].resample(Timestamp=dt)
-            datatree[output_dataset][variable] = variable_resampled.std(ddof=1, skipna=True)
+            datatree[output_dataset]['sigma_' + variable] = variable_resampled.std(ddof=1, skipna=True)
 
         # Calculate mean of the coordinates
         for coordinate in input_coordinates:
+            breakpoint()
             coordinate_resampled = datatree[dataset][coordinate].resample(Timestamp=dt)
+            # TODO use the position in the middle. Mean could have issues around
+            # poles and anti meridian
             datatree[output_dataset][coordinate] = coordinate_resampled.mean()
 
         return datatree

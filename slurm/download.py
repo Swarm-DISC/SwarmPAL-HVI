@@ -49,6 +49,7 @@ def main(args) -> None:
             print(f"Skipping because file exists: {filename}")
             continue
             
+        # TODO remove dirty data using staging branch of SwarmPAL
         config = make_config(args.collection, start_date)
         data = swarmpal.fetch_data(config)
         data.to_netcdf(filename)
