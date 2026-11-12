@@ -15,6 +15,7 @@ dataproduct = '/SW_OPER_MAGB_LR_1B_spatial_binned'
 
 # +
 import datetime
+from pathlib import Path
 
 resolution=2
 
@@ -22,10 +23,16 @@ def make_start_week(year):
     return hvi_data.get_swarm_week(datetime.datetime(year, 1, 1))
 def make_end_week(year):
     return hvi_data.get_swarm_week(datetime.datetime(year, 12, 31))
-                          
-long_average_fname = hvi_data.get_local_filename(f"results/SW_OPER_MAGB_LR_1B__000__626__analysed__h3r={resolution}.nc")
+
+def get_filename(fname):
+    res = Path("../slurm/SwarmPAL-HVI-data") / fname
+    if os.path.exists(res):
+        return res
+    return hvi_data.get_local_filename(fname)
+    
+long_average_fname = get_filename(f"results/SW_OPER_MAGB_LR_1B__000__626__analysed__h3r={resolution}.nc")
 year_average_fname = {
-    year: hvi_data.get_local_filename(f"results/SW_OPER_MAGB_LR_1B__{make_start_week(year):03}__{make_end_week(year):03}__analysed__h3r={resolution}.nc")
+    year: get_filename(f"results/SW_OPER_MAGB_LR_1B__{make_start_week(year):03}__{make_end_week(year):03}__analysed__h3r={resolution}.nc")
     for year in range(2014, 2026)
 }
 
@@ -63,9 +70,9 @@ for year, input_fname in year_average_fname.items():
         ratio_data[variable] = year_data[variable] / long_average[variable]
 
     '''
-    plot(ratio_data, columns=['B_NEC_std_C'],
-         vmax=dict(B_NEC_std_C=1.7),
-         vmin=dict(B_NEC_std_C=0.3),
+    plot(ratio_data, columns=['sigma_F_res_Model'],
+         vmax=dict(sigma_F_res_Model=1.7),
+         vmin=dict(sigma_F_res_Model=0.3),
          cmap='PiYG',
     )
     plt.title('$\\bar{\\sigma}_B$' + f'({year})/' + '$\\bar{\\sigma}_B$(2014-2025)')
@@ -77,9 +84,9 @@ for year, input_fname in year_average_fname.items():
             continue
         ratio_data[variable] = year_data[variable] / reference_average[variable]
 
-    plot(ratio_data, columns=['B_NEC_std'],
-         vmax=dict(B_NEC_std=3.0),
-         vmin=dict(B_NEC_std=-1.0),
+    plot(ratio_data, columns=['sigma_F_res_Model'],
+         vmax=dict(sigma_F_res_Model=3.0),
+         vmin=dict(sigma_F_res_Model=-1.0),
          cmap='PiYG',
     )
     plt.title('$\\bar{\\sigma}_B$' + f'({year})/' + '$\\bar{\\sigma}_B$(2020)')

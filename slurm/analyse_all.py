@@ -2,13 +2,14 @@
 # requires-python = ">=3.12"
 # dependencies = [
 #     "netcdf4>=1.7.4",
-#     "swarmpal>=0.3.0",
+#     "swarmpal",
 #     "swarmpal-hvi",
 #     "xarray>=2026.4.0",
 # ]
 #
 # [tool.uv.sources]
 # swarmpal-hvi = { path = "../" }
+# swarmpal = { git = "https://github.com/swarm-disc/swarmpal", branch="staging" }
 # ///
 
 import os
@@ -76,7 +77,7 @@ def analyse(args):
         dataset=input_dataproduct, # + "_time_binned",
         resolution=args.resolution,
         output_dataset=output_dataproduct, # + "_spatial_binned",
-        input_variables=["F", "sigma_B_NEC"]
+        input_variables=["sigma_F_res_Model", "sigma_B_NEC_res_Model"]
     ))
     ds = spatial_binning(ds)
 

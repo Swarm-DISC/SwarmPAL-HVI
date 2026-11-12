@@ -57,11 +57,10 @@ class TemporalBinning(PalProcess):
 
         # Calculate mean of the coordinates
         for coordinate in input_coordinates:
-            breakpoint()
             coordinate_resampled = datatree[dataset][coordinate].resample(Timestamp=dt)
             # TODO use the position in the middle. Mean could have issues around
             # poles and anti meridian
-            datatree[output_dataset][coordinate] = coordinate_resampled.mean()
+            datatree[output_dataset][coordinate] = coordinate_resampled.last()
 
         return datatree
 

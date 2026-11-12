@@ -1,13 +1,14 @@
 # /// script
 # requires-python = ">=3.12"
 # dependencies = [
-#     "swarmpal>=0.3.0",
+#     "swarmpal",
 #     "swarmpal-hvi",
 #     "xarray>=2026.4.0",
 # ]
 #
 # [tool.uv.sources]
 # swarmpal-hvi = { path = "../" }
+# swarmpal = { git = "https://github.com/swarm-disc/swarmpal", branch="staging" }
 # ///
 
 import os
