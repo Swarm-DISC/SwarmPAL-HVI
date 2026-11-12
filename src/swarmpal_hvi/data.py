@@ -16,7 +16,7 @@ POOCH = pooch.create(
     version=SWARMPAL_HVI_DATA_VERSION,
     version_dev="main",
     registry={
-        "registry.txt": "md5:13b0990cd143bca31e8433ea6eae0e9e",
+        "registry.txt": "md5:7c2cf32bf7d6697ccd22530a7ca560c0",
     },
 )
 
